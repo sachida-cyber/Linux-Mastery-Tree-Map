@@ -619,6 +619,14 @@ body {
     font-size: 0.875rem;
 }
 
+.qr-placeholder {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+
 .qr-note {
     color: var(--text-secondary);
     font-size: 0.75rem;
