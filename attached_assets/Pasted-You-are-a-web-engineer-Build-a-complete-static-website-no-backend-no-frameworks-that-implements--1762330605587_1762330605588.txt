@@ -1,0 +1,75 @@
+You are a web engineer. Build a complete static website (no backend, no frameworks) that implements the "Linux Mastery Tree Map" as a single-page application with three files only: **index.html**, **style.css**, and **script.js**.
+
+Important constraints:
+- Output only three files as code blocks: index.html, style.css and script.js. Do NOT produce React, TypeScript, server code, or additional files/folders.
+- The data (200+ commands/tools with short Hinglish explanations, install tips, usage examples) must be embedded inside **script.js** as a single JavaScript object/array (e.g. `const DATA = {...}`).
+- The site must work when these three files are placed in the same folder and opened (or hosted on GitHub Pages). Use only relative paths and external CDN only for D3 v7 if necessary.
+
+Functional requirements:
+1. Header (fixed at top-left):
+   - Left: small logo placeholder (SVG or text), brand name **SACHIDAX** and subtitle **Linux-Mastery-Map** below it.
+   - Right: search input, Toggle Theme button, Expand All, Collapse All.
+
+2. Main layout:
+   - Left/center: large D3.js v7 **collapsible horizontal tree** (looks similar to OSINT Framework).
+   - Right: details panel showing clicked node's:
+       - Name
+       - Hinglish short explanation
+       - Install command (if any)
+       - Usage example(s)
+   - Bottom or side: a scrollable list of **Hinglish explanations** for every command (so clicking a node scrolls/highlights the corresponding explanation).
+
+3. Tree behavior:
+   - Collapsible: clicking an internal node expands/collapses children.
+   - Smooth transitions and elbow/curved links.
+   - Node hover shows a tooltip (glassmorphism style) with the command description and one-line example.
+   - Zoom & pan with mouse wheel + drag.
+   - On load: collapse nodes deeper than depth 2 to keep view compact.
+   - Buttons: Expand All, Collapse All must expand/collapse all nodes.
+   - Search should:
+       - Filter/highlight nodes whose name/description matches query (case-insensitive)
+       - Scroll details/ explanation area to first match
+       - Clear to reset
+
+4. Data:
+   - Embed a JSON-like object named `DATA` containing at least **200 distinct commands/tools** across ~20 categories (Navigating, File Viewing, Permissions, Compression, Processes, System Info, Disk, Networking, Package Management, Services, Logs, Users, Security, Scripting, Containers, Monitoring, Dev Tools, Network Tools, Troubleshooting, Forensics, etc).
+   - For each item include fields: `name`, `type` (command/tool/procedure), `short` (Hinglish explanation, 1–2 lines), `install` (apt/yum/pacman example or "-" if not applicable), `usage` (one or two practical example lines).
+   - Use Hinglish for `short` and `usage` text (simple Hindi mixed with English; e.g., "File list dikhata hai — use `ls -lah` for details").
+
+5. Performance & UX:
+   - Use virtualization/lazy rendering if needed OR ensure tree handles 200+ nodes by initially collapsing deeper nodes.
+   - Responsive layout: on small screens, details panel collapses below the visualization.
+   - Add small legend or notes describing controls.
+   - Provide keyboard accessibility for search and basic controls.
+
+6. Visual style:
+   - Dark terminal-inspired theme (deep background #0d1117), neon-ish blue accent (#4da6ff), glowing nodes, subtle glass panels.
+   - Use monospace for node labels optionally.
+   - Mobile-friendly spacing and font sizes.
+
+7. Code quality:
+   - Clean, commented code. Keep JS modular (functions for build, layout, search, details).
+   - Avoid external build tools. Use D3 via CDN: `<script src="https://d3js.org/d3.v7.min.js"></script>` in index.html.
+
+8. Deliverable format:
+   - Provide **three code blocks** in the response: 
+     - ```html index.html
+       ... full HTML content ...
+       ```
+     - ```css style.css
+       ... full CSS content ...
+       ```
+     - ```javascript script.js
+       ... full JS content (including DATA = {...}) ...
+       ```
+   - The `script.js` must contain the embedded `DATA` object (200+ entries). Keep file sizes reasonable (text only). Use concise Hinglish sentences for descriptions to avoid overly large files.
+   - Also include in the HTML a short comment at top instructing the user how to deploy to GitHub Pages (commit files to repo root, enable Pages).
+
+Extra:
+- Add small "Export JSON" button in UI to download the DATA as a JSON file.
+- Add "Reset View" button to center tree and reset zoom.
+
+Tone of content:
+- All human-readable command descriptions and explanations must be in **Hinglish** (simple, friendly), e.g., "Ye command file list karta hai — use `ls -lah` to dekho details."
+
+Now generate the three files exactly as described. Ensure the site is ready-to-drop into a GitHub repo and will function in the browser.
