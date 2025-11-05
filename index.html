@@ -1,65 +1,45 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Linux Mastery Tree Map</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linux Mastery Tree Map 🐧</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="app-header">
-    <div class="title-area">
-      <h1>Linux Mastery Tree Map <span class="penguin">🐧</span></h1>
-      <p class="subtitle">200+ commands mapped, explained, and ready to practice.</p>
-    </div>
-
+  <header>
+    <h1>🐧 Linux Mastery Tree Map</h1>
     <div class="controls">
-      <div class="search-wrap">
-        <input id="search" type="search" placeholder="Search command or topic..." autocomplete="off" />
-        <button id="clearSearch" title="Clear">✕</button>
-      </div>
-
-      <div class="btns">
-        <button id="randomBtn" title="Random command of the day">🎲 Random</button>
-        <button id="themeToggle" title="Toggle theme">🌙</button>
-        <a class="github" href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
-      </div>
+      <input type="text" id="searchInput" placeholder="Search command or topic..." />
+      <button id="themeToggle" title="Toggle Theme">🌓</button>
     </div>
   </header>
 
-  <main class="container">
-    <section id="grid" class="grid"></section>
+  <main>
+    <section id="randomCommand" class="random-card">
+      <h2>💡 Command of the Day</h2>
+      <div id="randomCommandContent"></div>
+    </section>
+
+    <section id="categoriesContainer" class="categories-grid">
+      <!-- JS will populate categories here -->
+    </section>
   </main>
 
-  <!-- Side panel / modal -->
-  <aside id="panel" class="panel">
-    <button id="closePanel" class="close">✕</button>
-    <div class="panel-content">
-      <h2 id="cmd-name">Command</h2>
-      <div class="meta" id="cmd-category"></div>
-      <p id="cmd-desc"></p>
-
-      <div class="block">
-        <h3>Usage</h3>
-        <pre id="cmd-usage"></pre>
-      </div>
-
-      <div class="block">
-        <h3>Example</h3>
-        <pre id="cmd-example"></pre>
-        <button id="copyExample" class="copy-btn">Copy</button>
-      </div>
-
-      <div class="block">
-        <h3>Tip</h3>
-        <p id="cmd-tip"></p>
-      </div>
+  <div id="commandModal" class="modal hidden">
+    <div class="modal-content">
+      <span id="closeModal" class="close">&times;</span>
+      <h2 id="modalCommandName"></h2>
+      <p id="modalCommandDesc"></p>
+      <pre id="modalCommandUsage" class="usage"></pre>
+      <pre id="modalCommandExample" class="example"></pre>
+      <p id="modalCommandTip" class="tip"></p>
+      <button id="copyExample">📋 Copy Example</button>
     </div>
-  </aside>
+  </div>
 
-  <footer class="footer">
-    <div>Made with ❤️ • <a href="https://github.com/" target="_blank" rel="noopener">Linux Mastery Tree Map</a></div>
-    <div class="small">Tip: use the search to quickly filter by name, category or description.</div>
+  <footer>
+    <p>Built with SACHIDAX Paisson by Linux Enthusiasts | <a href="https://github.com/yourusername/linux-mastery-tree-map" target="_blank">GitHub</a></p>
   </footer>
 
   <script src="script.js"></script>
