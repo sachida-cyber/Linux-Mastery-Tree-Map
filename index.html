@@ -3,31 +3,64 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SACHIDAX — Linux-Mastery-Map</title>
-  <link rel="stylesheet" href="style.css">
-  <!-- d3 -->
-  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <title>Linux Mastery Tree Map</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <img src="assets/logo_white.png" alt="SACHIDAX Logo" class="logo">
-      <div class="titles">
-        <div class="brand-name">SACHIDAX</div>
-        <div class="subtitle">Linux-Mastery-Map</div>
+  <header class="app-header">
+    <div class="title-area">
+      <h1>Linux Mastery Tree Map <span class="penguin">🐧</span></h1>
+      <p class="subtitle">200+ commands mapped, explained, and ready to practice.</p>
+    </div>
+
+    <div class="controls">
+      <div class="search-wrap">
+        <input id="search" type="search" placeholder="Search command or topic..." autocomplete="off" />
+        <button id="clearSearch" title="Clear">✕</button>
+      </div>
+
+      <div class="btns">
+        <button id="randomBtn" title="Random command of the day">🎲 Random</button>
+        <button id="themeToggle" title="Toggle theme">🌙</button>
+        <a class="github" href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
       </div>
     </div>
-    <button id="toggleTheme" class="btn">Toggle dark mode</button>
   </header>
 
-  <main id="main">
-    <section id="vis" class="visualization"></section>
-
-    <section class="notes">
-      <h3>Notes</h3>
-      <p>This is a GitHub-Pages-ready static site. The visualization below is powered by D3.js. Replace the demo data in <code>script.js</code> with your tree-map data from your project.</p>
-    </section>
+  <main class="container">
+    <section id="grid" class="grid"></section>
   </main>
+
+  <!-- Side panel / modal -->
+  <aside id="panel" class="panel">
+    <button id="closePanel" class="close">✕</button>
+    <div class="panel-content">
+      <h2 id="cmd-name">Command</h2>
+      <div class="meta" id="cmd-category"></div>
+      <p id="cmd-desc"></p>
+
+      <div class="block">
+        <h3>Usage</h3>
+        <pre id="cmd-usage"></pre>
+      </div>
+
+      <div class="block">
+        <h3>Example</h3>
+        <pre id="cmd-example"></pre>
+        <button id="copyExample" class="copy-btn">Copy</button>
+      </div>
+
+      <div class="block">
+        <h3>Tip</h3>
+        <p id="cmd-tip"></p>
+      </div>
+    </div>
+  </aside>
+
+  <footer class="footer">
+    <div>Made with ❤️ • <a href="https://github.com/" target="_blank" rel="noopener">Linux Mastery Tree Map</a></div>
+    <div class="small">Tip: use the search to quickly filter by name, category or description.</div>
+  </footer>
 
   <script src="script.js"></script>
 </body>
