@@ -464,14 +464,14 @@ function initializeTree() {
   root.y0 = 0;
 
   // Assign IDs
-  root.descendants().forEach((d, i) => {
-    d.id = i;
-    d._children = d.children;
-    // Collapse nodes deeper than depth 2
-    if (d.depth > 2) {
-      d.children = null;
-    }
-  });
+root.descendants().forEach((d, i) => {
+  d.id = i;
+  d._children = d.children;
+  // collapse deeper levels (keep only first 2 levels open)
+  if (d.depth > 1) {
+    d.children = null;
+  }
+});
 
   update(root);
 }
