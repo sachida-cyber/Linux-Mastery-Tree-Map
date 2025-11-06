@@ -418,3 +418,25 @@ body {
   background: #fff;
   object-fit: cover;
 }
+/* ===== Custom Colorful Tree Enhancements ===== */
+.link {
+  stroke-width: 2.5px;
+  opacity: 0.8;
+}
+
+.link:nth-child(4n+1) { stroke: #ff6b6b; }   /* red-pink */
+.link:nth-child(4n+2) { stroke: #4da6ff; }   /* blue */
+.link:nth-child(4n+3) { stroke: #ffd93d; }   /* yellow */
+.link:nth-child(4n+4) { stroke: #00c49a; }   /* teal */
+
+.node circle {
+  stroke-width: 2px;
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+  transition: all 0.3s ease-in-out;
+}
+
+.node circle:hover {
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 10px #4da6ff);
+}
+
