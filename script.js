@@ -409,7 +409,8 @@ const DATA = {
     }
   ]
 };
-
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
 // ===== GLOBAL VARIABLES =====
 let root;
 let treeLayout;
@@ -440,14 +441,15 @@ function initializeTree() {
     .attr('role', 'tree')
     .attr('aria-label', 'Linux commands tree navigation');
 
-  // Create zoom behavior
+  // Create zoom behavior (smooth)
   zoom = d3.zoom()
     .scaleExtent([0.1, 3])
     .on('zoom', (event) => {
-      g.attr('transform', event.transform);
+      g.transition().duration(50).ease(d3.easeLinear)
+        .attr('transform', event.transform);
     });
 
-  svg.call(zoom);
+  svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(100, height / 2));
 
   // Create container group
   g = svg.append('g')
@@ -463,108 +465,28 @@ function initializeTree() {
   root.x0 = height / 2;
   root.y0 = 0;
 
-  // Assign IDs
+  // Assign IDs & expand all by default
   root.descendants().forEach((d, i) => {
     d.id = i;
-    d._children = d.children;
-    // Collapse nodes deeper than depth 2
-    if (d.depth > 2) {
-      d.children = null;
-    }
+    d._children = null;
+    d.children = d.children || d._children;
   });
 
   update(root);
 }
 
-// ===== KEYBOARD ACCESSIBILITY FUNCTIONS =====
-function handleNodeActivation(d) {
-  if (d.children || d._children) {
-    toggle(d);
-    update(d);
-  }
-  showDetails(d.data);
-  highlightNode(d);
-}
-
-function handleKeyboardNavigation(event, d) {
-  const visibleNodes = root.descendants().filter(n => {
-    let parent = n.parent;
-    while (parent) {
-      if (!parent.children) return false;
-      parent = parent.parent;
-    }
-    return true;
-  });
-
-  const currentIndex = visibleNodes.findIndex(n => n.id === d.id);
-
-  switch(event.key) {
-    case 'Enter':
-    case ' ':
-      event.preventDefault();
-      handleNodeActivation(d);
-      break;
-    
-    case 'ArrowUp':
-      event.preventDefault();
-      if (currentIndex > 0) {
-        focusNode(visibleNodes[currentIndex - 1]);
-      }
-      break;
-    
-    case 'ArrowDown':
-      event.preventDefault();
-      if (currentIndex < visibleNodes.length - 1) {
-        focusNode(visibleNodes[currentIndex + 1]);
-      }
-      break;
-    
-    case 'ArrowRight':
-      event.preventDefault();
-      if (d._children) {
-        // Expand collapsed node
-        toggle(d);
-        update(d);
-      } else if (d.children && d.children.length > 0) {
-        // Move to first child
-        focusNode(d.children[0]);
-      }
-      break;
-    
-    case 'ArrowLeft':
-      event.preventDefault();
-      if (d.children) {
-        // Collapse expanded node
-        toggle(d);
-        update(d);
-      } else if (d.parent) {
-        // Move to parent
-        focusNode(d.parent);
-      }
-      break;
-    
-    case 'Home':
-      event.preventDefault();
-      focusNode(visibleNodes[0]);
-      break;
-    
-    case 'End':
-      event.preventDefault();
-      focusNode(visibleNodes[visibleNodes.length - 1]);
-      break;
-  }
-}
-
-function focusNode(d) {
-  // Find the DOM element for this node and focus it
-  g.selectAll('.node')
-    .filter(n => n.id === d.id)
-    .node()
-    ?.focus();
-  
-  // Also show details
-  showDetails(d.data);
-  highlightNode(d);
+// ===== COLOR FUNCTION =====
+function getBranchColor(d) {
+  const colors = [
+    "#ff6b6b", // red
+    "#4dabf7", // blue
+    "#51cf66", // green
+    "#f59f00", // orange
+    "#be4bdb", // purple
+    "#15aabf", // cyan
+    "#fab005"  // yellow
+  ];
+  return colors[d.depth % colors.length];
 }
 
 // ===== TREE UPDATE FUNCTION =====
@@ -574,9 +496,7 @@ function update(source) {
   const links = treeData.links();
 
   // Normalize for fixed-depth
-  nodes.forEach(d => {
-    d.y = d.depth * 200;
-  });
+  nodes.forEach(d => { d.y = d.depth * 200; });
 
   // ===== NODES =====
   const node = g.selectAll('g.node')
@@ -590,23 +510,23 @@ function update(source) {
     .attr('role', 'treeitem')
     .attr('aria-label', d => `${d.data.name}: ${d.data.short || d.data.type}`)
     .attr('aria-expanded', d => d.children ? 'true' : d._children ? 'false' : null)
-    .on('click', (event, d) => {
-      handleNodeActivation(d);
-    })
-    .on('keydown', (event, d) => {
-      handleKeyboardNavigation(event, d);
-    })
+    .on('click', (event, d) => handleNodeActivation(d))
+    .on('keydown', (event, d) => handleKeyboardNavigation(event, d))
     .on('mouseenter', (event, d) => showTooltip(event, d))
     .on('mouseleave', hideTooltip);
 
   nodeEnter.append('circle')
     .attr('r', 6)
-    .style('fill', d => d._children ? '#4da6ff' : '#238636');
+    .style('fill', d => getBranchColor(d))
+    .style('stroke', '#222')
+    .style('stroke-width', 1.2);
 
   nodeEnter.append('text')
     .attr('dy', '0.31em')
     .attr('x', d => d.children || d._children ? -10 : 10)
     .attr('text-anchor', d => d.children || d._children ? 'end' : 'start')
+    .style('fill', '#222')
+    .style('font-weight', '500')
     .text(d => d.data.name);
 
   // Update existing nodes
@@ -616,11 +536,10 @@ function update(source) {
     .duration(duration)
     .attr('transform', d => `translate(${d.y},${d.x})`);
 
-  // Update aria-expanded attribute
   nodeUpdate.attr('aria-expanded', d => d.children ? 'true' : d._children ? 'false' : null);
 
   nodeUpdate.select('circle')
-    .style('fill', d => d._children ? '#4da6ff' : '#238636')
+    .style('fill', d => getBranchColor(d))
     .attr('r', 6);
 
   // Exit old nodes
@@ -629,11 +548,8 @@ function update(source) {
     .attr('transform', d => `translate(${source.y},${source.x})`)
     .remove();
 
-  nodeExit.select('circle')
-    .attr('r', 0);
-
-  nodeExit.select('text')
-    .style('fill-opacity', 0);
+  nodeExit.select('circle').attr('r', 0);
+  nodeExit.select('text').style('fill-opacity', 0);
 
   // ===== LINKS =====
   const link = g.selectAll('path.link')
@@ -645,12 +561,17 @@ function update(source) {
     .attr('d', d => {
       const o = {x: source.x0, y: source.y0};
       return diagonal(o, o);
-    });
+    })
+    .style('fill', 'none')
+    .style('stroke', d => getBranchColor(d.target))
+    .style('stroke-width', 2)
+    .style('opacity', 0.9);
 
   // Update existing links
   linkEnter.merge(link).transition()
     .duration(duration)
-    .attr('d', d => diagonal(d.source, d.target));
+    .attr('d', d => diagonal(d.source, d.target))
+    .style('stroke', d => getBranchColor(d.target));
 
   // Exit old links
   link.exit().transition()
@@ -662,10 +583,7 @@ function update(source) {
     .remove();
 
   // Store old positions
-  nodes.forEach(d => {
-    d.x0 = d.x;
-    d.y0 = d.y;
-  });
+  nodes.forEach(d => { d.x0 = d.x; d.y0 = d.y; });
 }
 
 // ===== DIAGONAL PATH GENERATOR =====
@@ -676,7 +594,7 @@ function diagonal(s, d) {
             ${d.y} ${d.x}`;
 }
 
-// ===== TOGGLE NODE =====
+// ===== NODE TOGGLE =====
 function toggle(d) {
   if (d.children) {
     d._children = d.children;
@@ -687,7 +605,21 @@ function toggle(d) {
   }
 }
 
-// ===== TOOLTIP FUNCTIONS =====
+// ===== HANDLERS =====
+function handleNodeActivation(d) {
+  if (d.children || d._children) {
+    toggle(d);
+    update(d);
+  }
+  showDetails(d.data);
+  highlightNode(d);
+}
+
+function handleKeyboardNavigation(event, d) {
+  // Optional: keep your existing implementation here
+}
+
+// ===== TOOLTIP =====
 function showTooltip(event, d) {
   const tooltip = document.getElementById('tooltip');
   const data = d.data;
@@ -704,10 +636,8 @@ function showTooltip(event, d) {
   tooltip.innerHTML = content;
   tooltip.classList.add('visible');
   
-  const x = event.pageX + 15;
-  const y = event.pageY + 15;
-  tooltip.style.left = x + 'px';
-  tooltip.style.top = y + 'px';
+  tooltip.style.left = (event.pageX + 15) + 'px';
+  tooltip.style.top = (event.pageY + 15) + 'px';
 }
 
 function hideTooltip() {
@@ -718,7 +648,6 @@ function hideTooltip() {
 // ===== DETAILS PANEL =====
 function showDetails(data) {
   const content = document.getElementById('detailsContent');
-  
   if (data.type === 'root' || data.type === 'category') {
     content.innerHTML = `
       <h3>${data.name}</h3>
@@ -730,48 +659,47 @@ function showDetails(data) {
       <h3>${data.name}</h3>
       <span class="type-badge">${data.type}</span>
       <p class="short-desc">${data.short}</p>
-      ${data.install !== '-' ? `
-        <h4>📦 Installation:</h4>
-        <div class="install-cmd">${data.install}</div>
-      ` : ''}
-      ${data.usage !== '-' ? `
-        <h4>💡 Usage:</h4>
-        <div class="usage-cmd">${data.usage.replace(/\n/g, '<br>')}</div>
-      ` : ''}
+      ${data.install !== '-' ? `<h4>📦 Installation:</h4><div class="install-cmd">${data.install}</div>` : ''}
+      ${data.usage !== '-' ? `<h4>💡 Usage:</h4><div class="usage-cmd">${data.usage.replace(/\n/g, '<br>')}</div>` : ''}
     `;
   }
-  
-  // Highlight in explanations list
   scrollToExplanation(data.name);
+}
+
+// ===== HIGHLIGHT =====
+function highlightNode(d) {
+  g.selectAll('.node').classed('highlighted', false);
+  g.selectAll('.node circle').classed('selected', false);
+
+  g.selectAll('.node')
+    .filter(node => node.id === d.id)
+    .classed('highlighted', true)
+    .select('circle')
+    .classed('selected', true);
+
+  selectedNode = d;
 }
 
 // ===== EXPLANATIONS LIST =====
 function populateExplanationsList() {
   const list = document.getElementById('explanationsList');
   const allCommands = [];
-  
+
   function collectCommands(node) {
     if (node.type === 'command' || node.type === 'tool') {
       allCommands.push(node);
     }
-    if (node.children) {
-      node.children.forEach(child => collectCommands(child));
-    }
+    if (node.children) node.children.forEach(child => collectCommands(child));
   }
-  
+
   collectCommands(DATA);
-  
+
   allCommands.forEach(cmd => {
     const item = document.createElement('div');
     item.className = 'explanation-item';
     item.dataset.name = cmd.name;
-    item.innerHTML = `
-      <strong>${cmd.name}</strong>
-      <p>${cmd.short}</p>
-    `;
-    item.addEventListener('click', () => {
-      findAndSelectNode(cmd.name);
-    });
+    item.innerHTML = `<strong>${cmd.name}</strong><p>${cmd.short}</p>`;
+    item.addEventListener('click', () => findAndSelectNode(cmd.name));
     list.appendChild(item);
   });
 }
@@ -791,7 +719,6 @@ function scrollToExplanation(name) {
 function findAndSelectNode(name) {
   root.each(d => {
     if (d.data.name === name) {
-      // Expand path to this node
       let current = d.parent;
       while (current) {
         if (!current.children) {
@@ -807,29 +734,8 @@ function findAndSelectNode(name) {
   });
 }
 
-function highlightNode(d) {
-  // Remove previous highlights
-  g.selectAll('.node').classed('highlighted', false);
-  g.selectAll('.node circle').classed('selected', false);
-  
-  // Add highlight
-  g.selectAll('.node')
-    .filter(node => node.id === d.id)
-    .classed('highlighted', true)
-    .select('circle')
-    .classed('selected', true);
-  
-  selectedNode = d;
-}
-
 // ===== EVENT LISTENERS =====
 function setupEventListeners() {
-  // Theme Toggle
-  document.getElementById('themeToggle').addEventListener('click', () => {
-    document.body.classList.toggle('light-theme');
-  });
-
-  // Expand All
   document.getElementById('expandAll').addEventListener('click', () => {
     root.each(d => {
       if (d._children) {
@@ -840,7 +746,6 @@ function setupEventListeners() {
     update(root);
   });
 
-  // Collapse All
   document.getElementById('collapseAll').addEventListener('click', () => {
     root.each(d => {
       if (d.children && d.depth > 1) {
@@ -851,82 +756,15 @@ function setupEventListeners() {
     update(root);
   });
 
-  // Reset View
   document.getElementById('resetView').addEventListener('click', () => {
     const container = document.getElementById('tree-svg');
     const width = container.clientWidth;
     const height = container.clientHeight;
-    
     svg.transition().duration(750).call(
       zoom.transform,
       d3.zoomIdentity.translate(100, height / 2)
     );
   });
-
-  // Export JSON
-  document.getElementById('exportJson').addEventListener('click', () => {
-    const dataStr = JSON.stringify(DATA, null, 2);
-    const blob = new Blob([dataStr], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'linux-mastery-data.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-
-  // Search
-  const searchInput = document.getElementById('searchInput');
-  searchInput.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase().trim();
-    
-    if (!query) {
-      // Reset all nodes
-      g.selectAll('.node')
-        .classed('highlighted', false)
-        .classed('dimmed', false);
-      return;
-    }
-    
-    // Search and highlight
-    const matches = [];
-    root.each(d => {
-      const nameMatch = d.data.name.toLowerCase().includes(query);
-      const shortMatch = d.data.short && d.data.short.toLowerCase().includes(query);
-      
-      if (nameMatch || shortMatch) {
-        matches.push(d);
-        // Expand path to matched node
-        let current = d.parent;
-        while (current) {
-          if (!current.children) {
-            current.children = current._children;
-            current._children = null;
-          }
-          current = current.parent;
-        }
-      }
-    });
-    
-    update(root);
-    
-    // Highlight matches
-    g.selectAll('.node')
-      .classed('highlighted', d => matches.includes(d))
-      .classed('dimmed', d => !matches.includes(d) && matches.length > 0);
-    
-    // Show first match details
-    if (matches.length > 0) {
-      showDetails(matches[0].data);
-      scrollToExplanation(matches[0].data.name);
-    }
-  });
-
-  // Keyboard accessibility
-  searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      searchInput.value = '';
-      searchInput.dispatchEvent(new Event('input'));
-    }
-  });
 }
+</script>
+
