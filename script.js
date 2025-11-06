@@ -444,11 +444,10 @@ function initializeTree() {
   zoom = d3.zoom()
     .scaleExtent([0.1, 3])
     .on('zoom', (event) => {
-      // immediate transform for smooth continuous zooming
       g.attr('transform', event.transform);
     });
 
-  svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(100, height / 2));
+  svg.call(zoom);
 
   // Create container group
   g = svg.append('g')
@@ -467,28 +466,14 @@ function initializeTree() {
   // Assign IDs
   root.descendants().forEach((d, i) => {
     d.id = i;
-    // keep _children reference for toggle but DO NOT collapse any nodes by default
     d._children = d.children;
-    // do NOT collapse by depth — keep children as-is so all branches are expanded by default
-    // (this differs from previous behavior which collapsed depth > 2)
+    // Collapse nodes deeper than depth 2
+    if (d.depth > 2) {
+      d.children = null;
+    }
   });
 
   update(root);
-}
-
-// ===== COLOR FUNCTION =====
-function getBranchColor(d) {
-  const colors = [
-    "#ff6b6b", // red
-    "#4dabf7", // blue
-    "#51cf66", // green
-    "#f59f00", // orange
-    "#be4bdb", // purple
-    "#15aabf", // cyan
-    "#fab005"  // yellow
-  ];
-  // If d is undefined or doesn't have depth, fallback to a color
-  return d && typeof d.depth === 'number' ? colors[d.depth % colors.length] : colors[0];
 }
 
 // ===== KEYBOARD ACCESSIBILITY FUNCTIONS =====
@@ -537,9 +522,11 @@ function handleKeyboardNavigation(event, d) {
     case 'ArrowRight':
       event.preventDefault();
       if (d._children) {
+        // Expand collapsed node
         toggle(d);
         update(d);
       } else if (d.children && d.children.length > 0) {
+        // Move to first child
         focusNode(d.children[0]);
       }
       break;
@@ -547,9 +534,11 @@ function handleKeyboardNavigation(event, d) {
     case 'ArrowLeft':
       event.preventDefault();
       if (d.children) {
+        // Collapse expanded node
         toggle(d);
         update(d);
       } else if (d.parent) {
+        // Move to parent
         focusNode(d.parent);
       }
       break;
@@ -567,11 +556,13 @@ function handleKeyboardNavigation(event, d) {
 }
 
 function focusNode(d) {
+  // Find the DOM element for this node and focus it
   g.selectAll('.node')
     .filter(n => n.id === d.id)
     .node()
     ?.focus();
   
+  // Also show details
   showDetails(d.data);
   highlightNode(d);
 }
@@ -610,9 +601,7 @@ function update(source) {
 
   nodeEnter.append('circle')
     .attr('r', 6)
-    .style('fill', d => getBranchColor(d))
-    .style('stroke', '#222')
-    .style('stroke-width', 1);
+    .style('fill', d => d._children ? '#4da6ff' : '#238636');
 
   nodeEnter.append('text')
     .attr('dy', '0.31em')
@@ -631,7 +620,7 @@ function update(source) {
   nodeUpdate.attr('aria-expanded', d => d.children ? 'true' : d._children ? 'false' : null);
 
   nodeUpdate.select('circle')
-    .style('fill', d => getBranchColor(d))
+    .style('fill', d => d._children ? '#4da6ff' : '#238636')
     .attr('r', 6);
 
   // Exit old nodes
@@ -656,17 +645,12 @@ function update(source) {
     .attr('d', d => {
       const o = {x: source.x0, y: source.y0};
       return diagonal(o, o);
-    })
-    .style('fill', 'none')
-    .style('stroke', d => getBranchColor(d.target))
-    .style('stroke-width', 2)
-    .style('opacity', 0.9);
+    });
 
   // Update existing links
   linkEnter.merge(link).transition()
     .duration(duration)
-    .attr('d', d => diagonal(d.source, d.target))
-    .style('stroke', d => getBranchColor(d.target));
+    .attr('d', d => diagonal(d.source, d.target));
 
   // Exit old links
   link.exit().transition()
