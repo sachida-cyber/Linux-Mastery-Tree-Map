@@ -1,0 +1,37 @@
+{
+  "name": "Treemap Data Root: System Overview",
+  "children": [
+    {
+      "name": "Core System & Management",
+      "children": [
+        { "name": "File & Directory Ops", "value": 500, "description": "Commands for creating, viewing, and deleting files." },
+        { "name": "Permissions & Users", "value": 300, "description": "Commands to manage file permissions and user access." },
+        { "name": "Process Control", "value": 450, "description": "Commands like top, ps, kill, and nice." },
+        { "name": "Disk & Volume Management", "value": 250, "description": "Tools for checking disk space and mounting." }
+      ]
+    },
+    {
+      "name": "Networking & Remote Access",
+      "children": [
+        { "name": "Network Utilities (Ping, Curl)", "value": 400, "description": "Tools for diagnostics and data transfer." },
+        { "name": "Secure Shell (SSH)", "value": 350, "description": "Commands for secure remote connections." },
+        { "name": "Firewall Configuration", "value": 150, "description": "Commands for setting up ufw or iptables." }
+      ]
+    },
+    {
+      "name": "Text & Data Processing",
+      "children": [
+        { "name": "Searching & Filtering (Grep, Find)", "value": 600, "description": "Tools for searching and filtering text streams." },
+        { "name": "Stream Editing (Sed & Awk)", "value": 200, "description": "Powerful command-line text manipulation tools." },
+        { "name": "File Viewers & Printers", "value": 100, "description": "Commands like less, more, and cat for viewing file contents." }
+      ]
+    },
+    {
+      "name": "Development & Version Control",
+      "children": [
+        { "name": "Git & Versioning", "value": 350, "description": "Common Git commands for repository management." },
+        { "name": "Package Management (Apt/Yum)", "value": 150, "description": "Commands for installing, updating, and removing software." }
+      ]
+    }
+  ]
+}
