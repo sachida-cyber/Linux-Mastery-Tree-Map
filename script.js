@@ -467,7 +467,7 @@ function initializeTree() {
 root.descendants().forEach((d, i) => {
   d.id = i;
   d._children = d.children;
-  // collapse deeper levels (keep only first 2 levels open)
+  // collapse deeper levels (keep only first 1 levels open)
   if (d.depth > 1) {
     d.children = null;
   }
