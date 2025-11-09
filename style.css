@@ -122,3 +122,43 @@ body{
   .viewer{order:1;height:60vh}
   .details{order:3}
 }
+
+body {
+  background-color: #0b1221; /* dark navy blue */
+  color: #e0e6f0; /* light readable font */
+  font-family: 'Inter', sans-serif;
+}
+
+.node text {
+  fill: #e0e6f0 !important; /* readable white font */
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.node circle {
+  stroke: #00bcd4;
+  stroke-width: 2px;
+  fill: #1c2a3a;
+}
+
+.link {
+  fill: none;
+  stroke: #34495e;
+  stroke-opacity: 0.5;
+}
+
+.sidebar, .search-panel {
+  background-color: #0e1b2b !important;
+  color: #e0e6f0 !important;
+}
+
+button, .btn {
+  background-color: #00bcd4 !important;
+  color: #000 !important;
+  border: none;
+}
+
+a, .footer-text {
+  color: #00bcd4 !important;
+}
+
