@@ -16,7 +16,6 @@
 
   // initialize
   document.addEventListener('DOMContentLoaded', () => {
-    // Basic sanity: DATA must exist
     if (typeof DATA === 'undefined') {
       document.getElementById('detailsContent').innerHTML = '<h3>Error</h3><p>data.js not loaded — make sure data.js is included.</p>';
       return;
@@ -38,9 +37,7 @@
     // setup zoom
     zoom = d3.zoom()
       .scaleExtent([0.2, 3])
-      .on('zoom', (event) => {
-        g.attr('transform', event.transform);
-      });
+      .on('zoom', (event) => g.attr('transform', event.transform));
 
     svg.call(zoom).on("dblclick.zoom", null);
 
@@ -52,23 +49,23 @@
       .size([dims.height - 120, dims.width - 360])
       .separation((a,b) => (a.parent === b.parent ? 1 : 1.2));
 
-    // create hierarchy
+    // hierarchy
     root = d3.hierarchy(DATA, d => d.children);
     root.x0 = dims.height / 2;
     root.y0 = 0;
-    // assign ids and collapse deep nodes
+
     root.each((d,i) => {
       d.id = ++nodeIdCounter;
       d._children = d.children;
-      if (d.depth > 2) d.children = null; // lazy collapse deep levels
+      if (d.depth > 0) d.children = null; // collapse all by default
     });
 
     update(root);
-    // initial zoom to center
+    // center the tree on load
     svg.call(zoom.transform, d3.zoomIdentity.translate(120, dims.height/2).scale(1));
   }
 
-  // diagonal path
+  // diagonal path generator
   function diagonal(s, d){
     return `M ${s.y} ${s.x}
             C ${(s.y + d.y) / 2} ${s.x},
@@ -76,17 +73,16 @@
               ${d.y} ${d.x}`;
   }
 
-  // update tree
+  // update tree rendering
   function update(source){
     const dims = getDimensions();
     treeLayout.size([dims.height - 120, dims.width - 360]);
     const treeData = treeLayout(root);
     const nodes = treeData.descendants();
     const links = treeData.links();
-
     nodes.forEach(d => d.y = d.depth * 200);
 
-    // NODES
+    // --- Nodes ---
     const node = g.selectAll('g.node').data(nodes, d => d.id);
 
     const nodeEnter = node.enter().append('g')
@@ -95,44 +91,40 @@
       .attr('tabindex', 0)
       .attr('role','treeitem')
       .attr('aria-label', d => `${d.data.name}: ${d.data.short || d.data.type}`)
-      .on('click', (event,d) => {
-        handleNodeActivation(d);
-      })
-      .on('keydown', (event,d) => {
-        handleKeyNav(event,d);
-      })
+      .on('click', (event,d) => handleNodeActivation(d))
+      .on('keydown', (event,d) => handleKeyNav(event,d))
       .on('mouseenter', (event,d) => showTooltip(event,d))
       .on('mouseleave', hideTooltip);
 
     nodeEnter.append('circle')
       .attr('r', 0)
       .style('fill', d => circleFill(d))
-      .style('stroke', '#041226');
+      .style('stroke', '#00bcd4')
+      .style('stroke-width','1.5px');
 
     nodeEnter.append('text')
       .attr('dy','0.32em')
       .attr('x', d => d._children || d.children ? -12 : 12)
       .attr('text-anchor', d => d._children || d.children ? 'end' : 'start')
       .text(d => d.data.name)
-      .style('fill-opacity', 0);
+      .style('fill-opacity', 0)
+      .style('fill', '#e0e6f0');
 
-    // merge
+    // merge enter + update
     const nodeUpdate = nodeEnter.merge(node);
-
     nodeUpdate.transition().duration(duration)
       .attr('transform', d => `translate(${d.y},${d.x})`);
-
     nodeUpdate.select('circle').transition().duration(duration).attr('r', 8).style('fill', d => circleFill(d));
     nodeUpdate.select('text').transition().duration(duration).style('fill-opacity', 1);
 
-    // exit
+    // exit old nodes
     const nodeExit = node.exit().transition().duration(duration)
       .attr('transform', d => `translate(${source.y},${source.x})`)
       .remove();
     nodeExit.select('circle').attr('r',0);
     nodeExit.select('text').style('fill-opacity',0);
 
-    // LINKS
+    // --- Links ---
     const link = g.selectAll('path.link').data(links, d => d.target.id);
     const linkEnter = link.enter().insert('path','g').attr('class','link')
       .attr('d', d => {
@@ -140,33 +132,31 @@
         return diagonal(o,o);
       })
       .style('fill','none')
-      .style('stroke','rgba(150,200,255,0.12)')
-      .style('stroke-width','1.6px');
+      .style('stroke','rgba(0,188,212,0.3)')
+      .style('stroke-width','1.5px');
 
     linkEnter.merge(link).transition().duration(duration).attr('d', d => diagonal(d.source, d.target));
-    link.exit().transition().duration(duration).attr('d', d => {
-      const o = {x: source.x, y: source.y};
-      return diagonal(o,o);
-    }).remove();
+    link.exit().transition().duration(duration)
+      .attr('d', d => {
+        const o = {x: source.x, y: source.y};
+        return diagonal(o,o);
+      })
+      .remove();
 
     // store old positions
-    nodes.forEach(d => {
-      d.x0 = d.x;
-      d.y0 = d.y;
-    });
+    nodes.forEach(d => { d.x0 = d.x; d.y0 = d.y; });
   }
 
-  // choose circle fill by node type
+  // circle fill color logic
   function circleFill(d){
     const t = (d.data.type || '').toLowerCase();
-    if (t === 'root' || d.depth === 0) return 'url(#gradRoot)';
-    if (t === 'category') return getComputedStyle(document.documentElement).getPropertyValue('--node-cat') || '#1bbf7a';
-    if (t === 'command') return getComputedStyle(document.documentElement).getPropertyValue('--node-cmd') || '#ff9f43';
-    // default
-    return d._children ? '#4da6ff' : '#238636';
+    if (t === 'root' || d.depth === 0) return '#00e5ff';
+    if (t === 'category') return '#4caf50';
+    if (t === 'command') return '#ff9800';
+    return d._children ? '#4da6ff' : '#2196f3';
   }
 
-  // toggle children
+  // toggle node expand/collapse
   function toggle(d){
     if (d.children){
       d._children = d.children; d.children = null;
@@ -184,7 +174,7 @@
     highlightNode(d);
   }
 
-  // keyboard nav
+  // keyboard navigation
   function handleKeyNav(event,d){
     const visible = root.descendants().filter(n => {
       let p = n.parent;
@@ -211,15 +201,10 @@
   }
 
   function focusNode(d){
-    // focus DOM
-    g.selectAll('g.node').filter(n => n.id === d.id).node()?.focus();
+    const nodeEl = g.selectAll('g.node').filter(n => n.id === d.id).node();
+    if (nodeEl) nodeEl.focus();
     showDetails(d.data);
     highlightNode(d);
-    // also bring into view by zoom transform
-    try {
-      const svgNode = document.getElementById('tree-svg');
-      const bbox = d3.select(g.node().querySelectorAll('g.node')[0]) // fallback
-    } catch(e){}
   }
 
   // tooltip
@@ -234,15 +219,12 @@
     }
     tt.innerHTML = html;
     tt.classList.add('visible');
-    const x = event.pageX + 14;
-    const y = event.pageY + 14;
-    tt.style.left = x + 'px';
-    tt.style.top = y + 'px';
+    tt.style.left = (event.pageX + 14) + 'px';
+    tt.style.top = (event.pageY + 14) + 'px';
   }
 
   function hideTooltip(){
-    const tt = document.getElementById('tooltip');
-    tt.classList.remove('visible');
+    document.getElementById('tooltip').classList.remove('visible');
   }
 
   // details panel
@@ -257,7 +239,7 @@
     scrollToExplanation(data.name);
   }
 
-  // explanations list
+  // list of explanations
   function populateExplanationsList(){
     const list = document.getElementById('explanationsList');
     list.innerHTML = '';
@@ -267,7 +249,6 @@
       if (n.children) n.children.forEach(c => collect(c));
     }
     collect(DATA);
-    // sort alphabetically
     items.sort((a,b) => a.name.localeCompare(b.name));
     items.forEach(it => {
       const el = document.createElement('div');
@@ -293,11 +274,8 @@
 
   function findAndSelectNode(name){
     let found = null;
-    root.each(d => {
-      if (d.data.name === name) found = d;
-    });
+    root.each(d => { if (d.data.name === name) found = d; });
     if (!found) return;
-    // expand path
     let cur = found.parent;
     while (cur){
       if (!cur.children) { cur.children = cur._children; cur._children = null; }
@@ -311,7 +289,9 @@
   function highlightNode(d){
     g.selectAll('g.node').classed('highlighted', false);
     g.selectAll('circle').classed('selected', false);
-    g.selectAll('g.node').filter(n => n.id === d.id).classed('highlighted', true).select('circle').classed('selected', true);
+    g.selectAll('g.node').filter(n => n.id === d.id)
+      .classed('highlighted', true)
+      .select('circle').classed('selected', true);
     selectedNode = d;
   }
 
@@ -328,7 +308,6 @@
       const short = (d.data.short || '').toLowerCase();
       if (name.includes(q) || short.includes(q)){
         matches.push(d);
-        // expand path
         let cur = d.parent;
         while (cur){
           if (!cur.children) { cur.children = cur._children; cur._children = null; }
@@ -337,7 +316,9 @@
       }
     });
     update(root);
-    g.selectAll('g.node').classed('highlighted', d => matches.includes(d)).classed('dimmed', d => !matches.includes(d) && matches.length > 0);
+    g.selectAll('g.node')
+      .classed('highlighted', d => matches.includes(d))
+      .classed('dimmed', d => !matches.includes(d) && matches.length > 0);
     if (matches.length) { showDetails(matches[0].data); scrollToExplanation(matches[0].data.name); }
   }
 
@@ -348,37 +329,27 @@
     document.getElementById('collapseAll').addEventListener('click', collapseAll);
     document.getElementById('resetView').addEventListener('click', resetView);
     document.getElementById('exportJson').addEventListener('click', exportJson);
-
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-      searchQuery(e.target.value);
-    });
-    document.getElementById('searchInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Escape'){ e.target.value=''; searchQuery(''); }
-    });
-
-    // resize
+    document.getElementById('searchInput').addEventListener('input', (e) => searchQuery(e.target.value));
+    document.getElementById('searchInput').addEventListener('keydown', (e) => { if (e.key === 'Escape'){ e.target.value=''; searchQuery(''); }});
     window.addEventListener('resize', () => {
-      // recalc svg size
       const dims = getDimensions();
       d3.select('#tree-svg').attr('width', dims.width).attr('height', dims.height);
       update(root);
     });
-
-    // keyboard focus for svg
     document.getElementById('tree-svg').addEventListener('keydown', (e) => {
       if (!selectedNode) return;
       handleKeyNav(e, selectedNode);
     });
   }
 
-  // utilities
+  // util actions
   function expandAll(){
     root.each(d => { if (d._children) { d.children = d._children; d._children = null; }});
     update(root);
   }
   function collapseAll(){
     root.each(d => {
-      if (d.children && d.depth > 1){
+      if (d.children && d.depth > 0){
         d._children = d.children; d.children = null;
       }
     });
@@ -386,7 +357,8 @@
   }
   function resetView(){
     const dims = getDimensions();
-    svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity.translate(120, dims.height/2).scale(1));
+    svg.transition().duration(750)
+      .call(zoom.transform, d3.zoomIdentity.translate(120, dims.height/2).scale(1));
   }
   function exportJson(){
     const dataStr = JSON.stringify(DATA, null, 2);
@@ -396,12 +368,9 @@
     a.href = url; a.download = 'linux-mastery-pro.json'; a.click();
     URL.revokeObjectURL(url);
   }
-
   function toggleTheme(){
     document.body.classList.toggle('light-theme');
   }
-
-  // small escape
   function escapeHtml(s){ if (!s) return ''; return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 })();
