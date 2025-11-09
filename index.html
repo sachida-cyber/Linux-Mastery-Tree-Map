@@ -13,30 +13,36 @@
   <meta name="theme-color" content="#0b1220" />
 </head>
 <body class="dark-theme">
-  <header class="topbar">
-    <div class="brand">
-      <!-- simple svg logo -->
-      <svg id="logo" width="44" height="44" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect width="64" height="64" rx="10" fill="#071226"></rect>
-        <g transform="translate(10,10)" fill="none" stroke="#00ffb3" stroke-width="3">
-          <path d="M4 20 L12 4 L20 20 Z" stroke-linejoin="round" />
-          <circle cx="12" cy="28" r="6" stroke="#7afcff" stroke-width="2" fill="#062027"></circle>
-        </g>
-      </svg>
-      <div>
-        <h1>Linux Mastery Pro</h1>
-        <p class="tagline">Interactive Linux command tree — Hinglish explanations</p>
-      </div>
-    </div>
+<header class="topbar">
+  <div class="brand">
+    <!-- Prefer image, fallback to SVG -->
+    <img src="assets/img/logo.png" alt="Linux Mastery Logo" class="logo-img"
+         onerror="this.style.display='none';document.getElementById('logo').style.display='block';">
 
-    <div class="controls">
-      <button id="themeToggle" title="Toggle theme">🌗</button>
-      <button id="expandAll" title="Expand all">Expand All</button>
-      <button id="collapseAll" title="Collapse all">Collapse All</button>
-      <button id="resetView" title="Reset view">Reset View</button>
-      <button id="exportJson" title="Export JSON">Export JSON</button>
+    <!-- Fallback SVG Logo -->
+    <svg id="logo" width="44" height="44" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="64" height="64" rx="10" fill="#071226"></rect>
+      <g transform="translate(10,10)" fill="none" stroke="#00ffb3" stroke-width="3">
+        <path d="M4 20 L12 4 L20 20 Z" stroke-linejoin="round"></path>
+        <circle cx="12" cy="28" r="6" stroke="#7afcff" stroke-width="2" fill="#062027"></circle>
+      </g>
+    </svg>
+
+    <div class="title">
+      <h1>SACHIDAX Linux Mastery <span>Pro</span></h1>
+      <p class="tagline">Interactive Linux Command Tree — Hinglish + Real Terminal Examples</p>
     </div>
-  </header>
+  </div>
+
+  <div class="controls">
+    <button id="themeToggle" title="Toggle theme">🌗</button>
+    <button id="expandAll" title="Expand all">⤢ Expand</button>
+    <button id="collapseAll" title="Collapse all">⤡ Collapse</button>
+    <button id="resetView" title="Reset view">🔄 Reset</button>
+    <button id="exportJson" title="Export JSON">💾 Export</button>
+  </div>
+</header>
+
 
   <main class="main">
     <aside class="sidebar">
