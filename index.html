@@ -1,58 +1,68 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Linux Mastery Pro — Interactive Command Tree</title>
 
-  <link rel="stylesheet" href="style.css">
-  <!-- D3 v7 -->
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-
-  <!-- meta for theme memory -->
+  <!-- 🧠 Meta for theme memory -->
   <meta name="theme-color" content="#0b1220" />
+  <meta name="description" content="Linux Mastery Pro — Interactive Linux Command Tree with Hinglish explanations and real terminal examples." />
+
+  <!-- 🌈 Styles -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- 📊 D3.js (v7) -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
-<body class="dark-theme">
-<header class="topbar">
-  <div class="brand">
-    <!-- Prefer image, fallback to SVG -->
-    <img src="assets/img.jpg" alt="Linux Mastery Logo" class="logo-img"
-         onerror="this.style.display='none';document.getElementById('logo').style.display='block';">
 
-    <!-- Fallback SVG Logo -->
-    <svg id="logo" width="44" height="44" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect width="64" height="64" rx="10" fill="#071226"></rect>
-      <g transform="translate(10,10)" fill="none" stroke="#00ffb3" stroke-width="3">
-        <path d="M4 20 L12 4 L20 20 Z" stroke-linejoin="round"></path>
-        <circle cx="12" cy="28" r="6" stroke="#7afcff" stroke-width="2" fill="#062027"></circle>
-      </g>
-    </svg>
+<body>
+  <!-- 🌟 Header -->
+  <header class="topbar">
+    <div class="brand">
+      <!-- Prefer image, fallback to SVG -->
+      <img 
+        src="assets/img/logo.png" 
+        alt="Linux Mastery Logo" 
+        class="logo-img"
+        onerror="this.style.display='none';document.getElementById('logo').style.display='block';"
+      >
 
-    <div class="title">
-      <h1>SACHIDAX Linux Mastery <span>Pro</span></h1>
-      <p class="tagline">Interactive Linux Command Tree — Hinglish + Real Terminal Examples</p>
+      <!-- Fallback SVG Logo -->
+      <svg id="logo" width="44" height="44" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="64" height="64" rx="10" fill="#071226"></rect>
+        <g transform="translate(10,10)" fill="none" stroke="#00ffb3" stroke-width="3">
+          <path d="M4 20 L12 4 L20 20 Z" stroke-linejoin="round"></path>
+          <circle cx="12" cy="28" r="6" stroke="#7afcff" stroke-width="2" fill="#062027"></circle>
+        </g>
+      </svg>
+
+      <div class="title">
+        <h1>SACHIDAX Linux Mastery <span>Pro</span></h1>
+        <p class="tagline">Interactive Linux Command Tree — Hinglish + Real Terminal Examples</p>
+      </div>
     </div>
-  </div>
 
-  <div class="controls">
-    <button id="themeToggle" title="Toggle theme">🌗</button>
-    <button id="expandAll" title="Expand all">⤢ Expand</button>
-    <button id="collapseAll" title="Collapse all">⤡ Collapse</button>
-    <button id="resetView" title="Reset view">🔄 Reset</button>
-    <button id="exportJson" title="Export JSON">💾 Export</button>
-  </div>
-</header>
+    <div class="controls">
+      <button id="themeToggle" title="Toggle theme">🌗</button>
+      <button id="expandAll" title="Expand all">⤢ Expand</button>
+      <button id="collapseAll" title="Collapse all">⤡ Collapse</button>
+      <button id="resetView" title="Reset view">🔄 Reset</button>
+      <button id="exportJson" title="Export JSON">💾 Export</button>
+    </div>
+  </header>
 
-
+  <!-- 🧭 Main Layout -->
   <main class="main">
+    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="searchbox">
-        <input id="searchInput" placeholder="Search commands, categories... (type e.g. 'grep')" />
+        <input id="searchInput" placeholder="Search commands, categories... (e.g. 'grep')" />
       </div>
-
       <div id="explanationsList" class="explanations"></div>
     </aside>
 
+    <!-- Viewer -->
     <section class="viewer">
       <div id="canvasWrapper" class="canvas-wrapper">
         <svg id="tree-svg" tabindex="0"></svg>
@@ -60,22 +70,45 @@
       </div>
     </section>
 
+    <!-- Details Panel -->
     <aside class="details">
       <div id="detailsContent" class="details-content">
         <h3>Welcome to Linux Mastery Pro</h3>
-        <p>Click a node to view install & usage details (Hinglish explanations included).</p>
-        <div class="hint">Tip: Use arrow keys to navigate, Enter to expand/collapse.</div>
+        <p>Click any node to view install & usage details (Hinglish explanations included).</p>
+        <div class="hint">💡 Tip: Use arrow keys to navigate, Enter to expand/collapse nodes.</div>
       </div>
     </aside>
   </main>
 
+  <!-- ⚙️ Footer -->
   <footer class="footer">
     <div>Made with ❤️ — Linux Mastery Pro · <span id="version">v1.0</span></div>
-    <div class="credits">Logo & UI by your assistant</div>
+    <div class="credits">Logo & UI crafted by your assistant</div>
   </footer>
 
-  <!-- DATA (external file) -->
+  <!-- 📂 Scripts -->
   <script src="data.js"></script>
   <script src="script.js"></script>
+
+  <!-- 🌗 Theme Toggle -->
+  <script>
+    const themeToggle = document.getElementById("themeToggle");
+    const root = document.documentElement;
+
+    // Load saved theme from localStorage
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    root.setAttribute("data-theme", savedTheme);
+    themeToggle.textContent = savedTheme === "light" ? "☀️" : "🌗";
+
+    themeToggle.addEventListener("click", () => {
+      const current = root.getAttribute("data-theme");
+      const newTheme = current === "light" ? "dark" : "light";
+      root.setAttribute("data-theme", newTheme);
+      localStorage.setItem("theme", newTheme);
+      themeToggle.textContent = newTheme === "light" ? "☀️" : "🌗";
+      themeToggle.style.transform = "rotate(180deg)";
+      setTimeout(() => (themeToggle.style.transform = ""), 300);
+    });
+  </script>
 </body>
 </html>
